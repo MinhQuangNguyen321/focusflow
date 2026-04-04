@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-width: 240px;
+  --header-height: 64px;
+}
+
+@layer base {
+  body {
+    @apply bg-[#f3f4f6] text-slate-800 transition-colors duration-300;
+  }
+  
+  html.dark {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  
+  html.dark img, html.dark video, html.dark .no-invert {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-soft;
+  }
+  
+  .outlook-border {
+    @apply border-gray-200;
+  }
+  
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-2 rounded-lg transition-colors cursor-pointer text-slate-600 hover:bg-gray-100;
+  }
+  
+  .nav-item.active {
+    @apply bg-blue-50 text-blue-600 font-medium whitespace-nowrap;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
