@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="FocusFlow Tasks Preview">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg2)"/>
+  <rect x="70" y="60" width="1060" height="555" rx="28" fill="#f8fafc"/>
+  <rect x="110" y="110" width="980" height="90" rx="18" fill="#ffffff"/>
+  <rect x="110" y="220" width="980" height="70" rx="16" fill="#e2e8f0"/>
+  <rect x="110" y="305" width="980" height="70" rx="16" fill="#e2e8f0"/>
+  <rect x="110" y="390" width="980" height="70" rx="16" fill="#e2e8f0"/>
+  <rect x="110" y="475" width="980" height="70" rx="16" fill="#e2e8f0"/>
+  <circle cx="160" cy="255" r="14" fill="#3b82f6"/>
+  <circle cx="160" cy="340" r="14" fill="#22c55e"/>
+  <circle cx="160" cy="425" r="14" fill="#ef4444"/>
+  <circle cx="160" cy="510" r="14" fill="#a855f7"/>
+  <text x="130" y="165" fill="#0f172a" font-size="40" font-family="Segoe UI, Arial, sans-serif" font-weight="700">FocusFlow Tasks</text>
+  <text x="130" y="197" fill="#475569" font-size="18" font-family="Segoe UI, Arial, sans-serif">Organize priorities, folders, and timelines with clarity.</text>
+</svg>
