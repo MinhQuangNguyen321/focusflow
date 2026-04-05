@@ -6,9 +6,29 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
+  signInWithRedirect,
   GoogleAuthProvider,
   updateProfile
 } from 'firebase/auth';
+
+const getFriendlyAuthError = (err) => {
+  const code = err?.code || '';
+
+  if (code === 'auth/unauthorized-domain') {
+    return 'Google login bị chặn do domain chưa được cấp quyền trong Firebase Auth. Hãy thêm minhquangnguyen321.github.io vào Authorized domains.';
+  }
+  if (code === 'auth/popup-blocked') {
+    return 'Popup đăng nhập bị trình duyệt chặn. Hãy cho phép popup rồi thử lại.';
+  }
+  if (code === 'auth/popup-closed-by-user') {
+    return 'Bạn đã đóng popup đăng nhập trước khi hoàn tất.';
+  }
+  if (code === 'auth/operation-not-allowed') {
+    return 'Google Sign-In chưa được bật trong Firebase Console (Authentication > Sign-in method).';
+  }
+
+  return (err?.message || 'Google login failed.').replace('Firebase: ', '');
+};
 
 const Auth = ({ onGuestMode }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -42,12 +62,32 @@ const Auth = ({ onGuestMode }) => {
   };
 
   const handleGoogleLogin = async () => {
+    if (!auth) {
+      setError('Firebase chưa khởi tạo, vui lòng kiểm tra cấu hình môi trường.');
+      return;
+    }
+
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
     try {
+      setError(null);
       setLoading(true);
       await signInWithPopup(auth, provider);
     } catch (err) {
-      setError(err.message);
+      const code = err?.code || '';
+
+      if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request' || code === 'auth/operation-not-supported-in-this-environment') {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectErr) {
+          setError(getFriendlyAuthError(redirectErr));
+          return;
+        }
+      }
+
+      setError(getFriendlyAuthError(err));
     } finally {
       setLoading(false);
     }
