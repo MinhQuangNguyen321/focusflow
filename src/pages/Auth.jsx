@@ -62,8 +62,9 @@ const Auth = ({ onGuestMode }) => {
   };
 
   const handleGoogleLogin = async () => {
-    if (!auth) {
-      setError('Firebase chưa khởi tạo, vui lòng kiểm tra cấu hình môi trường.');
+    if (!auth || typeof auth === 'undefined') {
+      console.error('Firebase auth is not initialized:', { auth });
+      setError('Firebase chưa khởi tạo. Vui lòng reload trang và thử lại.');
       return;
     }
 
@@ -73,15 +74,19 @@ const Auth = ({ onGuestMode }) => {
     try {
       setError(null);
       setLoading(true);
+      console.log('Attempting Google login with auth:', typeof auth);
       await signInWithPopup(auth, provider);
     } catch (err) {
+      console.error('Google login error:', err);
       const code = err?.code || '';
 
       if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request' || code === 'auth/operation-not-supported-in-this-environment') {
         try {
+          console.log('Falling back to redirect...');
           await signInWithRedirect(auth, provider);
           return;
         } catch (redirectErr) {
+          console.error('Redirect login error:', redirectErr);
           setError(getFriendlyAuthError(redirectErr));
           return;
         }
