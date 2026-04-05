@@ -15,7 +15,7 @@ const HELP_CONTENT = {
         img: null
       },
       {
-        title: 'Trợ lý Nexus AI ✨',
+        title: 'Trợ lý FocusFlow AI ✨',
         desc: 'Nhấn vào banner màu xanh ở trên để mở AI. Bạn có thể gõ "Tạo lịch họp lúc 3h chiều mai" hoặc "Thêm việc học code vào thư mục Work", AI sẽ tự động xử lý cho bạn.',
         tip: 'AI Assistant giúp bạn tiết kiệm thời gian nhập liệu thủ công cực kỳ hiệu quả.',
         img: null

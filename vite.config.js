@@ -4,30 +4,30 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/todo-list/',
+  base: '/focusflow/',
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'AI Todo',
-        short_name: 'AI Todo',
+        name: 'FocusFlow',
+        short_name: 'FocusFlow',
         description: 'A focused productivity workspace for tasks, notes, and planning.',
         theme_color: '#0f172a',
         background_color: '#f8fafc',
         display: 'standalone',
-        start_url: '/todo-list/',
-        scope: '/todo-list/',
+        start_url: '/focusflow/',
+        scope: '/focusflow/',
         icons: [
           {
-            src: '/todo-list/favicon.svg',
+            src: '/focusflow/favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any',
           },
           {
-            src: '/todo-list/favicon.svg',
+            src: '/focusflow/favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'maskable',

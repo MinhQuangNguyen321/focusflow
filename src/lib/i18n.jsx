@@ -42,7 +42,7 @@ const translations = {
     // AI Assistant
     'Ask AI': 'Ask AI',
     "Type what you need, and I'll create the tasks and events automatically.": "Type what you need, and I'll create the tasks and events automatically.",
-    'Nexus AI Assistant': 'Nexus AI Assistant',
+    'Nexus AI Assistant': 'FocusFlow AI Assistant',
     'Active & Listening': 'Active & Listening',
     'Ask AI to create a task...': 'Ask AI to create a task...',
     
@@ -85,7 +85,7 @@ const translations = {
     'You have': 'Bạn có',
     'tasks and': 'công việc và',
     'events scheduled.': 'sự kiện sắp tới.',
-    'Nexus AI Assistant': 'Trợ Lý Nexus AI',
+    'Nexus AI Assistant': 'Trợ Lý AI FocusFlow',
     "Type what you need, and I'll create the tasks and events automatically.": 'Gõ thứ bạn cần, AI sẽ tự động tạo công việc và sự kiện.',
     'Ask AI': 'Hỏi AI',
     'Recent Tasks': 'Công Việc Gần Đây',
@@ -152,7 +152,7 @@ const translations = {
 
     // AI Assistant
     "Type what you need, and I'll create the tasks and events automatically.": 'Gõ thứ bạn cần, AI sẽ tạo công việc/sự kiện tự động.',
-    'Nexus AI Assistant': 'Trợ Lý Nexus AI',
+    'Nexus AI Assistant': 'Trợ Lý AI FocusFlow',
     'Active & Listening': 'Đang Lắng Nghe',
     'Ask AI to create a task...': 'Yêu cầu AI tạo tác vụ...',
 

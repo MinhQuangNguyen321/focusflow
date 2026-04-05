@@ -5,7 +5,7 @@ import { addDays, format, nextDay } from 'date-fns';
 
 const AIAssistant = ({ isOpen, onClose, addTask, addEvent, settings }) => {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Xin chào! Tôi là trợ lý AI (Nexus AI). Tôi đã được tối ưu hóa để tự động tìm kiếm mô hình phù hợp nhất với tài khoản của bạn. Hãy thử ra lệnh cho tôi nhé!", isBot: true }
+    { id: 1, text: "Xin chào! Tôi là trợ lý AI (FocusFlow AI). Tôi đã được tối ưu hóa để tự động tìm kiếm mô hình phù hợp nhất với tài khoản của bạn. Hãy thử ra lệnh cho tôi nhé!", isBot: true }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -167,7 +167,7 @@ const AIAssistant = ({ isOpen, onClose, addTask, addEvent, settings }) => {
         const parsed = JSON.parse(jsonStr);
 
         if (parsed.intent === 'EVENT') {
-          addEvent({ title: parsed.title, date: parsed.date || format(new Date(), 'yyyy-MM-dd'), startTime: parsed.startTime || '09:00 AM', endTime: parsed.endTime || '10:00 AM', location: 'Nexus AI', category: parsed.category, color: 'bg-indigo-500', tags: parsed.tags, description: `Tạo bởi ${currentModel}`, createdAt: new Date().toISOString() });
+          addEvent({ title: parsed.title, date: parsed.date || format(new Date(), 'yyyy-MM-dd'), startTime: parsed.startTime || '09:00 AM', endTime: parsed.endTime || '10:00 AM', location: 'FocusFlow AI', category: parsed.category, color: 'bg-indigo-500', tags: parsed.tags, description: `Tạo bởi ${currentModel}`, createdAt: new Date().toISOString() });
         } else {
           addTask({ title: parsed.title, dueDate: parsed.date || format(new Date(), 'yyyy-MM-dd'), category: parsed.category, priority: parsed.priority, tags: parsed.tags, notes: `Tạo bởi ${currentModel}`, createdAt: new Date().toISOString() });
         }
@@ -207,7 +207,7 @@ const AIAssistant = ({ isOpen, onClose, addTask, addEvent, settings }) => {
                   <Sparkles size={20} className="text-blue-50" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg tracking-tight">Nexus AI</h3>
+                  <h3 className="font-bold text-lg tracking-tight">FocusFlow AI</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
                     <span className="text-[10px] font-medium text-blue-100 uppercase tracking-widest">Active & Listening</span>
