@@ -9,9 +9,12 @@ import Focus from './pages/Focus'
 import Auth from './pages/Auth'
 import AIAssistant from './components/features/AIAssistant'
 import NoteEditor from './components/features/NoteEditor'
+import HelpWidget from './components/features/HelpWidget'
 import { format } from 'date-fns'
 import { auth, db } from './firebase'
+import { LanguageProvider } from './lib/i18n.jsx'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { 
   collection, 
   onSnapshot, 
@@ -43,6 +46,8 @@ const DEFAULT_SETTINGS = {
   ]
 };
 
+const APP_ICON = `${import.meta.env.BASE_URL}favicon.svg`;
+
 function App() {
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -57,6 +62,7 @@ function App() {
   const [tasks, setTasks] = useState([])
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES)
   const [events, setEvents] = useState([])
+  const [googleEvents, setGoogleEvents] = useState([])
   const [notes, setNotes] = useState([])
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
 
@@ -92,7 +98,7 @@ function App() {
         if (task.status === 'Pending' && task.dueDate === todayString && !notifiedItems[task.id]) {
           new Notification('Task Due Today 🎯', {
             body: `Don't forget to complete: ${task.title}`,
-            icon: '/vite.svg'
+            icon: APP_ICON
           });
           notifiedItems[task.id] = todayString;
           hasNewNotification = true;
@@ -104,7 +110,7 @@ function App() {
         if (event.date === todayString && !notifiedItems[`event_${event.id}`]) {
           new Notification('Upcoming Event Today 📅', {
             body: `${event.title} starts at ${event.startTime}`,
-            icon: '/vite.svg'
+            icon: APP_ICON
           });
           notifiedItems[`event_${event.id}`] = todayString;
           hasNewNotification = true;
@@ -125,6 +131,49 @@ function App() {
     const intervalId = setInterval(checkDeadlines, 60000);
     return () => clearInterval(intervalId);
   }, [tasks, events, settings.notifications]);
+
+  // Google Calendar Integration
+  useEffect(() => {
+    if (settings?.googleAccessToken) {
+      const fetchEvents = async () => {
+        try {
+          const timeMin = new Date();
+          timeMin.setMonth(timeMin.getMonth() - 2); 
+          const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin.toISOString()}&maxResults=250&singleEvents=true&orderBy=startTime`, {
+            headers: {
+              Authorization: `Bearer ${settings.googleAccessToken}`
+            }
+          });
+          const data = await res.json();
+          if (data.items) {
+             const gEvents = data.items.map(item => {
+               const startStr = item.start.dateTime || item.start.date;
+               const endStr = item.end.dateTime || item.end.date;
+               return {
+                 id: 'google_' + item.id,
+                 title: item.summary || 'No Title',
+                 date: startStr ? startStr.split('T')[0] : '', // yyyy-MM-dd
+                 startTime: item.start.dateTime ? startStr.split('T')[1].substring(0, 5) : '00:00',
+                 endTime: item.end.dateTime ? endStr.split('T')[1].substring(0, 5) : '23:59',
+                 category: 'Google',
+                 type: 'google',
+                 description: item.description || ''
+               }
+             });
+             setGoogleEvents(gEvents);
+          }
+        } catch (error) {
+          console.error("Failed to fetch Google Calendar events:", error);
+        }
+      };
+      fetchEvents();
+      // Optionally sync every 5 minutes
+      const interval = setInterval(fetchEvents, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    } else {
+      setGoogleEvents([]);
+    }
+  }, [settings?.googleAccessToken]);
 
   // 1. Listen for Auth State
   useEffect(() => {
@@ -226,7 +275,11 @@ function App() {
   };
 
   const addNote = async (noteData) => {
-    const newNote = { ...noteData, date: format(new Date(), 'MMM dd, yyyy') };
+    const newNote = { 
+      ...noteData, 
+      date: format(new Date(), 'MMM dd, yyyy'),
+      createdAt: new Date().toISOString() 
+    };
     if (user) {
       await addDoc(collection(db, "users", user.uid, "notes"), newNote);
     } else {
@@ -244,6 +297,10 @@ function App() {
   };
 
   const updateEvent = async (updatedEvent) => {
+    if (updatedEvent.id?.toString().startsWith('google_')) {
+      alert("Sự kiện từ Google Calendar chỉ có thể được xem (chưa hỗ trợ sửa đồng bộ).");
+      return;
+    }
     if (user) {
       const eventRef = doc(db, "users", user.uid, "events", updatedEvent.id);
       await updateDoc(eventRef, updatedEvent);
@@ -270,6 +327,10 @@ function App() {
   };
 
   const deleteEvent = async (id) => {
+    if (id?.toString().startsWith('google_')) {
+      alert("Sự kiện từ Google Calendar chỉ có thể được xem (chưa hỗ trợ xóa đồng bộ).");
+      return;
+    }
     if (user) {
       await deleteDoc(doc(db, "users", user.uid, "events", id));
     } else {
@@ -282,6 +343,102 @@ function App() {
       await deleteDoc(doc(db, "users", user.uid, "notes", id));
     } else {
       setNotes(prev => prev.filter(n => n.id !== id));
+    }
+  };
+
+  const clearActivities = async (type, startDateStr, endDateStr) => {
+    let tasksToDelete = [];
+    let eventsToDelete = [];
+    
+    if (type === 'all') {
+      tasksToDelete = [...tasks];
+      eventsToDelete = [...events];
+    } else if (type === 'range' && startDateStr && endDateStr) {
+      // Set to midnight for accurate day comparisons
+      const start = new Date(startDateStr);
+      start.setHours(0,0,0,0);
+      const end = new Date(endDateStr);
+      end.setHours(23,59,59,999);
+      
+      const startTime = start.getTime();
+      const endTime = end.getTime();
+      
+      tasksToDelete = tasks.filter(t => {
+         if (!t.dueDate) return false;
+         const d = new Date(t.dueDate).getTime();
+         return d >= startTime && d <= endTime;
+      });
+      eventsToDelete = events.filter(e => {
+         if (!e.date) return false;
+         const d = new Date(e.date).getTime();
+         return d >= startTime && d <= endTime;
+      });
+    }
+
+    if (user) {
+       await Promise.all([
+          ...tasksToDelete.map(t => deleteDoc(doc(db, "users", user.uid, "tasks", t.id.toString()))),
+          ...eventsToDelete.map(e => deleteDoc(doc(db, "users", user.uid, "events", e.id.toString())))
+       ]);
+    } else {
+       const taskIds = new Set(tasksToDelete.map(t => t.id));
+       const eventIds = new Set(eventsToDelete.map(e => e.id));
+       setTasks(prev => prev.filter(t => !taskIds.has(t.id)));
+       setEvents(prev => prev.filter(e => !eventIds.has(e.id)));
+    }
+  };
+
+  const clearTasks = async (type, folder, beforeDate) => {
+    let toDelete = [];
+
+    if (type === 'all') {
+      toDelete = [...tasks];
+    } else if (type === 'folder' && folder) {
+      toDelete = tasks.filter(t => t.category === folder);
+    } else if (type === 'date' && beforeDate) {
+      const cutoff = new Date(beforeDate);
+      cutoff.setHours(23, 59, 59, 999);
+      toDelete = tasks.filter(t => {
+        if (!t.createdAt) return false;
+        return new Date(t.createdAt) <= cutoff;
+      });
+    }
+
+    if (user) {
+      await Promise.all(
+        toDelete.map(t => deleteDoc(doc(db, 'users', user.uid, 'tasks', t.id.toString())))
+      );
+    } else {
+      const ids = new Set(toDelete.map(t => t.id));
+      setTasks(prev => prev.filter(t => !ids.has(t.id)));
+    }
+  };
+
+  const clearNotes = async (type, tag, beforeDate) => {
+    let toDelete = [];
+
+    if (type === 'all') {
+      toDelete = [...notes];
+    } else if (type === 'tag' && tag) {
+      toDelete = notes.filter(n => n.tags?.includes(tag));
+    } else if (type === 'date' && beforeDate) {
+      const cutoff = new Date(beforeDate);
+      cutoff.setHours(23, 59, 59, 999);
+      toDelete = notes.filter(n => {
+        // Fallback: If createdAt is missing, try to use the numeric ID (timestamp)
+        const timestamp = n.createdAt ? new Date(n.createdAt) : (!isNaN(n.id) ? new Date(Number(n.id)) : null);
+        if (!timestamp) return false;
+        return timestamp <= cutoff;
+      });
+    }
+
+    if (user) {
+      await Promise.all(
+        toDelete.map(n => deleteDoc(doc(db, 'users', user.uid, 'notes', n.id.toString())))
+      );
+    } else {
+      const ids = new Set(toDelete.map(n => n.id));
+      setNotes(prev => prev.filter(n => !ids.has(n.id)));
     }
   };
 
@@ -343,9 +500,10 @@ function App() {
         return (
           <Dashboard 
             tasks={tasks} 
-            events={events} 
+            events={[...events, ...googleEvents]} 
             updateTask={updateTask} 
-            categories={categories} 
+            categories={categories}
+            clearTasks={clearTasks} 
             setActiveSection={setActiveSection}
             openAIAssistant={() => setShowAIAssistant(true)}
             user={user}
@@ -353,11 +511,13 @@ function App() {
         )
       case 'tasks':
         return (
-          <Tasks 
+          <Tasks
             tasks={tasks}
             selectedFolder={selectedFolder}
             updateTask={updateTask}
             deleteTask={deleteTask}
+            clearTasks={clearTasks}
+            categories={categories}
             settings={settings}
           />
         )
@@ -367,6 +527,7 @@ function App() {
             notes={notes}
             onOpenNoteEditor={handleOpenNoteEditor}
             deleteNote={deleteNote}
+            clearNotes={clearNotes}
           />
         )
       case 'focus':
@@ -375,12 +536,13 @@ function App() {
         return (
           <Calendar 
             tasks={tasks} 
-            events={events} 
+            events={[...events, ...googleEvents]} 
             addTask={addTask} 
             addEvent={addEvent} 
             updateEvent={updateEvent}
             deleteEvent={deleteEvent}
             settings={settings}
+            clearActivities={clearActivities}
           />
         )
       case 'settings':
@@ -397,7 +559,7 @@ function App() {
         return (
           <Dashboard 
             tasks={tasks} 
-            events={events} 
+            events={[...events, ...googleEvents]} 
             updateTask={updateTask} 
             categories={categories} 
             setActiveSection={setActiveSection}
@@ -425,45 +587,52 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-[#f3f4f6]">
-      <Shell 
-        activeSection={activeSection} 
-        setActiveSection={setActiveSection}
-        selectedFolder={selectedFolder}
-        onSelectFolder={handleSelectFolder}
-        user={user}
-        settings={settings}
-        updateSettings={updateSettings}
-        isOnline={settings.isOnline}
-        categories={categories}
-        addCategory={addCategory}
-        addTask={addTask}
-        updateTask={updateTask}
-        deleteTask={deleteTask}
-        onLogout={handleLogout}
-        openTaskDetail={handleOpenNoteEditor}
-        tasks={tasks}
-        events={events}
-      >
-        {renderSection()}
-      </Shell>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <LanguageProvider language={settings.language}>
+        <div className="h-screen flex flex-col overflow-hidden bg-[#f3f4f6]">
+        <Shell 
+          activeSection={activeSection} 
+          setActiveSection={setActiveSection}
+          selectedFolder={selectedFolder}
+          onSelectFolder={handleSelectFolder}
+          user={user}
+          settings={settings}
+          updateSettings={updateSettings}
+          isOnline={settings.isOnline}
+          categories={categories}
+          addCategory={addCategory}
+          addTask={addTask}
+          updateTask={updateTask}
+          deleteTask={deleteTask}
+          onLogout={handleLogout}
+          openTaskDetail={handleOpenNoteEditor}
+          tasks={tasks}
+          events={[...events, ...googleEvents]}
+        >
+          {renderSection()}
+        </Shell>
 
-      <AIAssistant 
-        isOpen={showAIAssistant}
-        onClose={() => setShowAIAssistant(false)}
-        addTask={addTask}
-        addEvent={addEvent}
-        addNote={addNote}
-      />
+        <HelpWidget activeSection={activeSection} />
 
-      <NoteEditor 
-        isOpen={showNoteEditor}
-        onClose={() => setShowNoteEditor(false)}
-        note={currentEditingNote}
-        onSave={handleSaveNote}
-        onDelete={deleteNote}
-      />
-    </div>
+        <AIAssistant 
+          isOpen={showAIAssistant}
+          onClose={() => setShowAIAssistant(false)}
+          addTask={addTask}
+          addEvent={addEvent}
+          addNote={addNote}
+          settings={settings}
+        />
+
+        <NoteEditor 
+          isOpen={showNoteEditor}
+          onClose={() => setShowNoteEditor(false)}
+          note={currentEditingNote}
+          onSave={handleSaveNote}
+          onDelete={deleteNote}
+        />
+        </div>
+      </LanguageProvider>
+    </GoogleOAuthProvider>
   )
 }
 

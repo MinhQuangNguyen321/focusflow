@@ -3,7 +3,7 @@ import Sidebar from './Sidebar'
 import MobileNav from './MobileNav'
 import GlobalSearch from '../features/GlobalSearch'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, LogOut, Settings as SettingsIcon, User, Moon, Sun } from 'lucide-react'
+import { Plus, LogOut, Settings as SettingsIcon, User, Moon, Sun, Menu, X } from 'lucide-react'
 import TaskCreator from '../features/TaskCreator'
 import TaskDrawer from '../features/TaskDrawer'
 
@@ -11,6 +11,7 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const getInitials = () => {
     if (!user) return 'GA'; // Guest Account
@@ -73,8 +74,66 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
 
       {/* Mobile Shell */}
       <div className="md:hidden flex flex-col w-full h-full pb-20">
+         {/* Mobile Sidebar Drawer */}
+         <AnimatePresence>
+           {isMobileSidebarOpen && (
+             <>
+               <motion.div
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 exit={{ opacity: 0 }}
+                 className="fixed inset-0 bg-slate-900/40 z-[80] md:hidden backdrop-blur-sm"
+                 onClick={() => setIsMobileSidebarOpen(false)}
+               />
+               <motion.div
+                 initial={{ x: '-100%' }}
+                 animate={{ x: 0 }}
+                 exit={{ x: '-100%' }}
+                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                 className="fixed top-0 left-0 bottom-0 w-[240px] bg-white z-[90] md:hidden shadow-2xl"
+               >
+                 <Sidebar 
+                   activeSection={activeSection} 
+                   setActiveSection={(sec) => { setActiveSection(sec); setIsMobileSidebarOpen(false); }}
+                   selectedFolder={selectedFolder}
+                   onSelectFolder={(folder) => { onSelectFolder(folder); setIsMobileSidebarOpen(false); }}
+                   tasks={tasks}
+                   categories={categories}
+                   onNewTask={() => { setIsCreatorOpen(true); setIsMobileSidebarOpen(false); }}
+                   user={user}
+                   onLogout={onLogout}
+                   addCategory={addCategory}
+                 />
+                 {/* Close button for drawer explicitly */}
+                 <button 
+                   onClick={() => setIsMobileSidebarOpen(false)}
+                   className="absolute top-4 right-4 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200"
+                 >
+                   <X size={18} />
+                 </button>
+               </motion.div>
+             </>
+           )}
+         </AnimatePresence>
+
          <div className="h-16 flex items-center px-4 bg-white border-b border-gray-100 justify-between sticky top-0 z-30">
-            <h1 className="text-xl font-bold text-blue-600 mr-4">FocusFlow</h1>
+            <div className="flex items-center gap-3">
+               <button 
+                 onClick={() => setIsMobileSidebarOpen(true)}
+                 className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors active:scale-95"
+               >
+                 <Menu size={20} />
+               </button>
+               <h1 
+                 className="text-xl font-bold text-blue-600 mr-4 cursor-pointer"
+                 onClick={() => {
+                   setActiveSection('dashboard');
+                   onSelectFolder(null); // Optional, clears selected folder
+                 }}
+               >
+                 FocusFlow
+               </h1>
+            </div>
             
             <div className="flex-1 flex justify-end mr-4">
               <GlobalSearch tasks={tasks} events={events} openTaskDetail={openTaskDetail} setActiveSection={setActiveSection} />
@@ -88,10 +147,55 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
                 <Plus size={20} />
               </button>
               <div 
-                className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs border border-blue-200"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-8 h-8 rounded-full bg-blue-100 flex flex-col items-center justify-center text-blue-600 font-bold text-xs border border-blue-200 cursor-pointer shadow-sm active:scale-95 transition-transform"
               >
                 {getInitials()}
               </div>
+
+             {/* Profile Dropdown for Mobile */}
+             <AnimatePresence>
+                {isDropdownOpen && (
+                  <>
+                     <div 
+                       className="fixed inset-0 z-[60]" 
+                       onClick={() => setIsDropdownOpen(false)}
+                     />
+                     <motion.div 
+                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                       animate={{ opacity: 1, y: 0, scale: 1 }}
+                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                       transition={{ duration: 0.15 }}
+                       className="absolute right-4 top-[70px] w-56 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden z-[70] origin-top-right"
+                     >
+                        <div 
+                           className="p-4 border-b border-slate-50 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors"
+                           onClick={() => { setActiveSection('dashboard'); setIsDropdownOpen(false); }}
+                        >
+                           <p className="text-sm font-bold text-slate-800">{user ? user.displayName || 'FocusFlow User' : 'Guest Mode'}</p>
+                           <p className="text-xs text-slate-500 truncate">{user ? user.email : 'Offline workspace'}</p>
+                        </div>
+                        <div className="p-2">
+                           <button 
+                             onClick={() => { setActiveSection('settings'); setIsDropdownOpen(false); }}
+                             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-colors"
+                           >
+                              <User size={16} /> Edit Profile
+                           </button>
+                        </div>
+                        <div className="p-2 border-t border-slate-50">
+                           <button 
+                             onClick={() => { onLogout(); setIsDropdownOpen(false); }}
+                             className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                           >
+                              <LogOut size={16} /> Sign Out {user ? '' : '(Exit)'}
+                           </button>
+                        </div>
+                     </motion.div>
+                  </>
+                )}
+             </AnimatePresence>
+
             </div>
          </div>
 

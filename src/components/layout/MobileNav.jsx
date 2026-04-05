@@ -1,13 +1,17 @@
 import React from 'react';
 import { LayoutDashboard, StickyNote, Calendar, Settings, Timer } from 'lucide-react';
 
+import { useTranslation } from '../../lib/i18n.jsx';
+
 const MobileNav = ({ activeSection, setActiveSection }) => {
+  const { t } = useTranslation();
+  
   const navItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Home' },
-    { id: 'focus', icon: Timer, label: 'Focus' },
-    { id: 'notes', icon: StickyNote, label: 'Notes' },
-    { id: 'calendar', icon: Calendar, label: 'Calendar' },
-    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'dashboard', icon: LayoutDashboard, label: t('Home') },
+    { id: 'focus', icon: Timer, label: t('Focus') },
+    { id: 'notes', icon: StickyNote, label: t('Notes') },
+    { id: 'calendar', icon: Calendar, label: t('Calendar') },
+    { id: 'settings', icon: Settings, label: t('Settings') },
   ];
 
   return (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, Volume2, VolumeX, RefreshCcw, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '../lib/i18n.jsx';
 
 const PRESETS = [
   { label: 'Pomodoro', minutes: 25, color: 'text-rose-500', bg: 'bg-rose-500', shadow: 'shadow-rose-500/20' },
@@ -9,6 +10,7 @@ const PRESETS = [
 ];
 
 const Focus = () => {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 mins default
   const [initialTime, setInitialTime] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
@@ -119,8 +121,8 @@ const Focus = () => {
       
       <div className="w-full flex justify-between items-center mb-12 flex-shrink-0">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Focus Mode</h1>
-          <p className="text-slate-500 font-medium hidden sm:block">Block distractions and accomplish your tasks.</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">{t('Focus Mode')}</h1>
+          <p className="text-slate-500 font-medium hidden sm:block">{t('Block distractions and accomplish your tasks.')}</p>
         </div>
         <button 
           onClick={requestNotificationPermission}
@@ -131,7 +133,7 @@ const Focus = () => {
           }`}
         >
           {notificationsEnabled ? <Bell size={18} /> : <VolumeX size={18} />}
-          {notificationsEnabled ? 'Notifications On' : 'Enable Notifications'}
+          {notificationsEnabled ? t('Notifications On') : t('Enable Notifications')}
         </button>
       </div>
 
@@ -163,7 +165,7 @@ const Focus = () => {
            
            <div className="relative z-10 flex flex-col items-center">
              <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-2 whitespace-nowrap">
-               {currentPreset ? currentPreset.label : 'Custom Timer'}
+               {currentPreset ? currentPreset.label : t('Custom Timer')}
              </span>
              <h2 className={`text-6xl md:text-7xl font-black tabular-nums tracking-tighter transition-colors duration-500 ${activeColor}`}>
                {formatTime(timeLeft)}
@@ -249,7 +251,7 @@ const Focus = () => {
                disabled={!customMin && !customSec}
                className="px-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
              >
-               Set
+               {t('Set')}
              </button>
            </form>
 

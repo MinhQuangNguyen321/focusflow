@@ -13,8 +13,8 @@ import {
   subDays,
   eachDayOfInterval 
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, MapPin, List, LayoutGrid } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, MapPin, List, LayoutGrid, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import EventCreator from '../components/features/EventCreator';
 
@@ -59,7 +59,10 @@ const CurrentTimeTracker = () => {
   );
 };
 
-const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, onOpenTask }) => {
+import { useTranslation } from '../lib/i18n.jsx';
+
+const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, clearActivities, onOpenTask }) => {
+  const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showEventModal, setShowEventModal] = useState(false);
@@ -68,6 +71,17 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
   const [editingEvent, setEditingEvent] = useState(null);
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'day'
   const isDraggingItem = useRef(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [clearType, setClearType] = useState('all'); // 'all' | 'range'
+  const [clearStartDate, setClearStartDate] = useState('');
+  const [clearEndDate, setClearEndDate] = useState('');
+
+  const handleClear = () => {
+    if (clearActivities) {
+       clearActivities(clearType, clearStartDate, clearEndDate);
+    }
+    setShowClearModal(false);
+  };
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -116,24 +130,24 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
               </div>
            </>
         ) : (
-           <h2 className="text-3xl font-black text-slate-800 tracking-tight">Timeline</h2>
+           <h2 className="text-3xl font-black text-slate-800 tracking-tight">{t('Timeline')}</h2>
         )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        {/* Toggle View Mode */}
+         {/* Toggle View Mode */}
         <div className="flex bg-slate-200 p-1 rounded-xl mr-2 shadow-inner">
            <button 
              onClick={() => setViewMode('month')}
              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'month' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
            >
-             <LayoutGrid size={14} /> Month
+             <LayoutGrid size={14} /> {t('Month')}
            </button>
            <button 
              onClick={() => setViewMode('day')}
              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'day' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
            >
-             <List size={14} /> Day
+             <List size={14} /> {t('Day')}
            </button>
         </div>
 
@@ -142,14 +156,20 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
           className="flex items-center gap-2 px-4 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm shadow-sm"
         >
           <Plus size={18} />
-          Quick Task
+          {t('Quick Task')}
         </button>
         <button 
           onClick={() => openEventCreator()}
           className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all font-bold text-sm"
         >
           <CalendarIcon size={16} />
-          New Event
+          {t('New Event')}
+        </button>
+        <button 
+          onClick={() => setShowClearModal(true)}
+          className="flex items-center justify-center p-2.5 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all"
+        >
+          <Trash2 size={18} />
         </button>
       </div>
     </div>
@@ -245,12 +265,12 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
                 </div>
                 <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className="p-2 sm:p-3 bg-white hover:bg-slate-100 rounded-xl shadow-sm border border-slate-100 transition-colors"><ChevronRight size={20}/></button>
              </div>
-             <div className="w-full sm:w-auto text-center">
+              <div className="w-full sm:w-auto text-center">
                 <button 
                    onClick={() => setSelectedDate(new Date())}
                    className="w-full sm:w-auto px-4 py-2 font-bold text-sm text-slate-600 hover:bg-slate-100 rounded-xl"
                 >
-                   Jump to Today
+                   {t('Jump to Today')}
                 </button>
              </div>
           </div>
@@ -500,6 +520,106 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
           </div>
         </div>
       </div>
+
+      {/* Clear Modal */}
+      <AnimatePresence>
+        {showClearModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-slate-100">
+                <h3 className="text-xl font-black text-rose-600">{t('Clear Calendar')}</h3>
+                <button 
+                  onClick={() => setShowClearModal(false)}
+                  className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <div className="flex flex-col gap-4">
+                  <label className="flex items-center gap-3 p-4 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50">
+                    <input 
+                      type="radio" 
+                      name="clearType" 
+                      checked={clearType === 'all'}
+                      onChange={() => setClearType('all')}
+                      className="w-4 h-4 text-rose-600 focus:ring-rose-500"
+                    />
+                    <div>
+                      <p className="font-bold text-slate-800">{t('Clear All Activities')}</p>
+                      <p className="text-xs text-slate-500">{t('Deletes every event and task.')}</p>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-center gap-3 p-4 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50">
+                    <input 
+                      type="radio" 
+                      name="clearType" 
+                      checked={clearType === 'range'}
+                      onChange={() => setClearType('range')}
+                      className="w-4 h-4 text-rose-600 focus:ring-rose-500"
+                    />
+                    <div>
+                      <p className="font-bold text-slate-800">{t('Clear Specific Range')}</p>
+                      <p className="text-xs text-slate-500">{t('Only delete within selected dates.')}</p>
+                    </div>
+                  </label>
+
+                  {clearType === 'range' && (
+                     <div className="flex gap-4 mt-2">
+                        <div className="flex-1">
+                           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">{t('Start Date')}</label>
+                           <input 
+                             type="date"
+                             value={clearStartDate}
+                             onChange={(e) => setClearStartDate(e.target.value)}
+                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                           />
+                        </div>
+                        <div className="flex-1">
+                           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">{t('End Date')}</label>
+                           <input 
+                             type="date"
+                             value={clearEndDate}
+                             onChange={(e) => setClearEndDate(e.target.value)}
+                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                           />
+                        </div>
+                     </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[2rem]">
+                <button
+                  onClick={() => setShowClearModal(false)}
+                  className="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
+                >
+                  {t('Cancel')}
+                </button>
+                <button
+                  onClick={handleClear}
+                  disabled={clearType === 'range' && (!clearStartDate || !clearEndDate)}
+                  className="px-5 py-2.5 text-sm font-bold text-white bg-rose-600 rounded-xl shadow-lg shadow-rose-200 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('Confirm Delete')}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

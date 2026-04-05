@@ -6,6 +6,8 @@ import {
 import { updateProfile, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
 import { auth } from '../firebase';
 import { format } from 'date-fns';
+import { useTranslation } from '../lib/i18n.jsx';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const SectionHeader = ({ title, description }) => (
   <div className="mb-6">
@@ -15,6 +17,7 @@ const SectionHeader = ({ title, description }) => (
 );
 
 const Settings = ({ user, settings, updateSettings, onLogout }) => {
+  const { t } = useTranslation();
   // Local state for extended profile editing
   const [profileData, setProfileData] = useState({
     displayName: user?.displayName || '',
@@ -25,6 +28,15 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
   });
   
   const [newQuote, setNewQuote] = useState('');
+  
+  const login = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/calendar.events',
+    onSuccess: tokenResponse => {
+      updateSettings({ googleAccessToken: tokenResponse.access_token });
+      alert('Tài khoản Google đã được kết nối! | Google Account Connected!');
+    },
+    onError: error => alert('Kết nối thất bại | Connection Failed')
+  });
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -124,24 +136,24 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
 
       {/* Hero Header */}
       <div className="flex flex-col gap-2 border-b border-slate-200 pb-8">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Account Settings</h1>
-        <p className="text-slate-500 font-medium">Manage your FocusFlow identity, preferences, and security.</p>
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight">{t('Account Settings')}</h1>
+        <p className="text-slate-500 font-medium">{t('Manage your FocusFlow identity, preferences, and security.')}</p>
       </div>
 
       {/* 1. Core Identity */}
       <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2"></div>
-        <SectionHeader title="Core Identity" description="These fields define your primary FocusFlow profile." />
+        <SectionHeader title={t('Core Identity')} description="These fields define your primary FocusFlow profile." />
         
         {isEditingProfile ? (
           <div className="space-y-6 animate-in fade-in duration-200">
-             <div className="flex items-start gap-8">
-                <div className="w-24 h-24 shrink-0 bg-blue-100 rounded-[2rem] flex flex-col items-center justify-center text-blue-600 relative overflow-hidden border-4 border-white shadow-lg">
+             <div className="flex flex-col items-center md:flex-row md:items-start gap-6 md:gap-8 text-center md:text-left">
+                <div className="w-24 h-24 shrink-0 bg-blue-100 rounded-[2rem] flex flex-col items-center justify-center text-blue-600 relative overflow-hidden border-4 border-white shadow-lg mx-auto md:mx-0">
                    {profileData.avatarUrl ? <img src={profileData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <Camera size={32} />}
                 </div>
                 <div className="flex-1 space-y-4 w-full">
-                   <div>
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Display Name</label>
+                   <div className="text-left">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">{t('Display Name')}</label>
                      <input 
                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                        value={profileData.displayName}
@@ -149,8 +161,8 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
                        placeholder="e.g. John Doe"
                      />
                    </div>
-                   <div>
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Avatar Image URL (Optional)</label>
+                   <div className="text-left">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">{t('Avatar Image URL (Optional)')}</label>
                      <input 
                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-sm"
                        value={profileData.avatarUrl}
@@ -162,19 +174,19 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
              </div>
           </div>
         ) : (
-          <div className="flex items-center gap-8">
-             <div className="w-24 h-24 shrink-0 bg-blue-600 rounded-[2rem] flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-200/50 relative overflow-hidden ring-4 ring-white">
+          <div className="flex flex-col items-center md:flex-row gap-6 md:gap-8 text-center md:text-left">
+             <div className="w-24 h-24 shrink-0 bg-blue-600 rounded-[2rem] flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-200/50 relative overflow-hidden ring-4 ring-white mx-auto md:mx-0">
                 {settings?.avatarUrl ? <img src={settings.avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : getInitials()}
              </div>
              <div className="flex-1">
                 <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{user ? user.displayName || 'Unnamed User' : 'Guest Account'}</h2>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
                    <Mail size={14} className="text-slate-400" />
-                   <p className="text-slate-500 font-bold text-sm tracking-wide">{user ? user.email : 'Local Storage Only'}</p>
+                   <p className="text-slate-500 font-bold text-sm tracking-wide break-all">{user ? user.email : 'Local Storage Only'}</p>
                 </div>
              </div>
              {user && (
-               <button onClick={() => setIsEditingProfile(true)} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all shadow-sm">
+               <button onClick={() => setIsEditingProfile(true)} className="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all shadow-sm">
                   Edit Profile
                </button>
              )}
@@ -186,14 +198,13 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
       <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
          <div className="flex items-center justify-between mb-6">
             <div>
-               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Personal Information</h3>
-               <p className="text-xs font-semibold text-slate-400 mt-1">Add context to your workspace.</p>
+               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">{t('Personal Information')}</h3>
             </div>
             {isEditingProfile && (
                <div className="flex items-center gap-2">
                   <button onClick={() => setIsEditingProfile(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-all"><X size={20} /></button>
                   <button onClick={handleProfileSave} disabled={loading} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-all flex items-center gap-2">
-                     <Save size={16} /> Save
+                     <Save size={16} /> {t('Save')}
                   </button>
                </div>
             )}
@@ -202,7 +213,7 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className={`p-5 rounded-2xl border ${isEditingProfile ? 'bg-slate-50 border-blue-100' : 'bg-white border-slate-100'}`}>
                <div className="flex items-center gap-2 mb-3 text-slate-400">
-                  <Hash size={16} /> <span className="text-[10px] uppercase font-black tracking-widest">Bio / Headline</span>
+                  <Hash size={16} /> <span className="text-[10px] uppercase font-black tracking-widest">{t('Bio / Headline')}</span>
                </div>
                {isEditingProfile ? (
                  <textarea 
@@ -219,7 +230,7 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
 
             <div className={`p-5 rounded-2xl border ${isEditingProfile ? 'bg-slate-50 border-blue-100' : 'bg-white border-slate-100'}`}>
                <div className="flex items-center gap-2 mb-3 text-slate-400">
-                  <Briefcase size={16} /> <span className="text-[10px] uppercase font-black tracking-widest">Job Title / Role</span>
+                  <Briefcase size={16} /> <span className="text-[10px] uppercase font-black tracking-widest">{t('Job Title / Role')}</span>
                </div>
                {isEditingProfile ? (
                  <input 
@@ -235,7 +246,7 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
 
             <div className={`p-5 rounded-2xl border md:col-span-2 ${isEditingProfile ? 'bg-slate-50 border-blue-100' : 'bg-white border-slate-100'}`}>
                <div className="flex items-center gap-2 mb-3 text-slate-400">
-                  <MapPin size={16} /> <span className="text-[10px] uppercase font-black tracking-widest">Location / Timezone</span>
+                  <MapPin size={16} /> <span className="text-[10px] uppercase font-black tracking-widest">{t('Location / Timezone')}</span>
                </div>
                {isEditingProfile ? (
                  <input 
@@ -253,7 +264,7 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
 
       {/* 3. User Preferences */}
       <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
-         <SectionHeader title="User Preferences" description="Customize your interface and notification alerts." />
+         <SectionHeader title={t('User Preferences')} description="Customize your interface and notification alerts." />
          <div className="space-y-3">
             <div 
                onClick={() => updateSettings({ darkMode: !settings.darkMode })}
@@ -262,7 +273,7 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors"><Moon size={20} /></div>
                   <div>
-                     <p className="font-bold text-sm text-slate-800">Interface Theme</p>
+                     <p className="font-bold text-sm text-slate-800">{t('Interface Theme')}</p>
                      <p className="text-xs font-semibold text-slate-400 mt-0.5">Toggle Dark Mode aesthetics.</p>
                   </div>
                </div>
@@ -287,18 +298,18 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
                </div>
             </div>
 
-            <div className="flex justify-between items-center p-5 rounded-2xl border border-slate-100 transition-all">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-2xl border border-slate-100 gap-4 transition-all">
                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center"><Globe size={20} /></div>
+                  <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center"><Globe size={20} /></div>
                   <div>
-                     <p className="font-bold text-sm text-slate-800">Language</p>
+                     <p className="font-bold text-sm text-slate-800">{t('Language')}</p>
                      <p className="text-xs font-semibold text-slate-400 mt-0.5">Primary language for dates and system text.</p>
                   </div>
                </div>
                <select 
                   value={settings?.language || 'English'}
                   onChange={e => updateSettings({ language: e.target.value })}
-                  className="bg-slate-50 border border-slate-200 font-bold text-sm text-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full sm:w-auto bg-slate-50 border border-slate-200 font-bold text-sm text-slate-700 rounded-lg px-4 py-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                >
                   <option value="English">English</option>
                   <option value="Vietnamese">Vietnamese</option>
@@ -347,7 +358,50 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
          </div>
       </section>
 
-      {/* 4. Account Security */}
+      {/* 4. Integrations */}
+      <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+         <SectionHeader title={t('Integrations')} description="Connect external services and APIs." />
+         
+         <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+               <label className="text-sm font-bold text-slate-800">{t('Gemini API Key')}</label>
+               <p className="text-xs text-slate-500 mb-2">Enable smart AI parsing. Get your key from Google AI Studio.</p>
+               <div className="flex gap-3">
+                  <input 
+                     type="password"
+                     placeholder="AIzaSy..."
+                     value={settings?.geminiKey || ''}
+                     onChange={e => updateSettings({ geminiKey: e.target.value })}
+                     className="flex-1 bg-slate-50 border border-slate-200 font-bold text-sm text-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
+                  />
+               </div>
+            </div>
+
+               <div className="flex border-t border-slate-100 p-5 items-center justify-between group hover:bg-slate-50 transition-colors rounded-b-2xl">
+                  <div>
+                     <p className="font-bold text-sm text-slate-800">Google Calendar</p>
+                     <p className="text-xs font-semibold text-slate-400 mt-0.5">Sync tasks and events with your Google account.</p>
+                  </div>
+                  {settings?.googleAccessToken ? (
+                    <button 
+                      onClick={() => updateSettings({ googleAccessToken: null })}
+                      className="px-4 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl text-sm"
+                    >
+                      Disconnect
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => login()}
+                      className="px-4 py-2 bg-blue-100 text-blue-600 font-bold rounded-xl text-sm"
+                    >
+                      Connect
+                    </button>
+                  )}
+               </div>
+          </div>
+      </section>
+
+      {/* 5. Account Security */}
       <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm overflow-hidden relative">
          <div className="absolute left-0 w-1 h-full bg-rose-500 top-0"></div>
          <SectionHeader title="Account Security" description="Warning: Some actions in this section are irreversible." />

@@ -6,18 +6,9 @@ import {
   Settings, 
   Folder, 
   Timer, 
-  LogOut, 
-  LogIn,
   Plus
 } from 'lucide-react';
-
-const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'focus', label: 'Focus Timer', icon: Timer },
-  { id: 'notes', label: 'Notes', icon: StickyNote },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'settings', label: 'Settings', icon: Settings },
-];
+import { useTranslation } from '../../lib/i18n.jsx';
 
 const Sidebar = ({ 
   activeSection, 
@@ -33,6 +24,15 @@ const Sidebar = ({
 }) => {
   const [isAddingFolder, setIsAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const { t } = useTranslation();
+
+  const navItems = [
+    { id: 'dashboard', label: t('Home'), icon: LayoutDashboard },
+    { id: 'focus', label: t('Focus'), icon: Timer },
+    { id: 'notes', label: t('Notes'), icon: StickyNote },
+    { id: 'calendar', label: t('Calendar'), icon: Calendar },
+    { id: 'settings', label: t('Settings'), icon: Settings },
+  ];
 
   const handleAddFolder = (e) => {
     e.preventDefault();
@@ -63,7 +63,7 @@ const Sidebar = ({
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-8">
         {/* Main Menu */}
         <div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 mb-4">Main Menu</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4 mb-4">{t('Home')}</p>
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -100,7 +100,7 @@ const Sidebar = ({
         {/* Folders */}
         <div>
           <div className="flex items-center justify-between px-4 mb-4">
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Folders</p>
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('Folders')}</p>
              <button 
                onClick={() => setIsAddingFolder(true)}
                className="p-1 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-colors shadow-sm"

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, Trash2, Clock, Hash } from 'lucide-react';
+import { Search, Plus, Trash2, Clock, Hash, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '../lib/i18n.jsx';
 
 const NoteCard = ({ note, onEdit, onDelete, index }) => (
   <motion.div 
@@ -47,9 +48,96 @@ const NoteCard = ({ note, onEdit, onDelete, index }) => (
   </motion.div>
 );
 
-const Notes = ({ notes, onOpenNoteEditor, deleteNote }) => {
+const ClearNotesModal = ({ isOpen, onClose, onConfirm, allTags, t }) => {
+  const [clearType, setClearType] = useState('all');
+  const [selectedTag, setSelectedTag] = useState(allTags[1] || 'All'); // Start with first actual tag
+  const [beforeDate, setBeforeDate] = useState(new Date().toISOString().split('T')[0]);
+
+  if (!isOpen) return null;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div 
+        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, y: 20, opacity: 0 }}
+        className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl border border-slate-100"
+      >
+        <div className="bg-rose-500 p-8 text-white text-center">
+          <div className="flex items-center justify-center mb-4">
+             <div className="p-3 bg-white/20 rounded-2xl">
+                <Trash2 size={32} />
+             </div>
+          </div>
+          <h2 className="text-2xl font-black tracking-tight mb-2">{t('Clear Notes')}</h2>
+          <p className="text-rose-100 font-medium text-xs leading-relaxed">{t('Wait! This will permanently remove notes.')}</p>
+        </div>
+
+        <div className="p-8 space-y-6">
+          <div className="space-y-3">
+             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('Deletion Mode')}</label>
+             <div className="grid grid-cols-1 gap-2">
+                {[
+                  { id: 'all', label: t('Delete All Notes'), icon: <Trash2 size={16}/> },
+                  { id: 'date', label: t('Delete by Creation Date'), icon: <Clock size={16}/> }
+                ].map(mode => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setClearType(mode.id)}
+                    className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all font-bold text-sm ${
+                      clearType === mode.id ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200'
+                    }`}
+                  >
+                    {mode.icon}
+                    {mode.label}
+                  </button>
+                ))}
+             </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {clearType === 'date' && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-3 overflow-hidden">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('Select Date')}</label>
+                <input 
+                  type="date" 
+                  value={beforeDate}
+                  onChange={(e) => setBeforeDate(e.target.value)}
+                  className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-slate-800 focus:ring-2 focus:ring-rose-500/20"
+                />
+                <p className="text-[10px] text-slate-400 font-medium italic leading-relaxed">{t('All notes created on or before this date will be deleted.')}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="pt-4 flex gap-3">
+             <button onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all font-bold">
+               {t('Cancel')}
+             </button>
+             <button 
+               onClick={() => { onConfirm({ type: clearType, tag: selectedTag, beforeDate }); onClose(); }}
+               className="flex-[2] py-4 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-rose-200 hover:bg-rose-600 transition-all font-bold"
+             >
+               {t('Clear')}
+             </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const Notes = ({ notes, onOpenNoteEditor, deleteNote, clearNotes }) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [activeFilterTag, setActiveFilterTag] = useState('All');
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const filteredNotes = useMemo(() => {
     return notes.filter(note => {
@@ -71,73 +159,98 @@ const Notes = ({ notes, onOpenNoteEditor, deleteNote }) => {
     return Array.from(tags);
   }, [notes]);
 
+  const handleClearConfirm = ({ type, tag, beforeDate }) => {
+    if (clearNotes) clearNotes(type, tag, beforeDate);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto space-y-10 pb-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-         <div className="flex flex-col gap-2">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Your Notes</h1>
-            <p className="text-slate-500 font-medium tracking-tight">Organize your thoughts, ideas, and inspirations.</p>
-         </div>
-         
-         <div className="flex items-center gap-4 flex-1 max-w-xl">
-            <div className="relative flex-1 group">
-               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
-               <input 
-                 type="text" 
-                 placeholder="Search thoughts..." 
-                 className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100/30 focus:border-blue-500 transition-all font-bold text-slate-800 shadow-sm"
-                 value={search}
-                 onChange={(e) => setSearch(e.target.value)}
-               />
-            </div>
-            <button 
-              onClick={() => onOpenNoteEditor()}
-              className="p-4 bg-blue-600 text-white rounded-[1.5rem] shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center shrink-0"
+    <>
+      <div className="max-w-7xl mx-auto space-y-10 pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+           <div className="flex flex-col gap-2">
+              <h1 className="text-4xl font-black text-slate-900 tracking-tighter">{t('Your Notes')}</h1>
+              <p className="text-slate-500 font-medium tracking-tight">{t('Organize your thoughts, ideas, and inspirations.')}</p>
+           </div>
+           
+           <div className="flex items-center gap-4 flex-1 max-w-xl">
+              <div className="relative flex-1 group">
+                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
+                 <input 
+                   type="text" 
+                   placeholder={t('Search thoughts...')} 
+                   className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100/30 focus:border-blue-500 transition-all font-bold text-slate-800 shadow-sm"
+                   value={search}
+                   onChange={(e) => setSearch(e.target.value)}
+                 />
+              </div>
+              <button 
+                onClick={() => setShowClearModal(true)}
+                className="p-4 bg-rose-50 text-rose-500 rounded-[1.5rem] border border-rose-100 hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center shrink-0"
+                title={t('Clear Notes')}
+              >
+                <Trash2 size={24} />
+              </button>
+              <button 
+                onClick={() => onOpenNoteEditor()}
+                className="p-4 bg-blue-600 text-white rounded-[1.5rem] shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center shrink-0"
+              >
+                <Plus size={28} />
+              </button>
+           </div>
+        </div>
+
+        <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide">
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setActiveFilterTag(tag)}
+              className={`px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-[0.1em] transition-all whitespace-nowrap ${
+                activeFilterTag === tag 
+                  ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 scale-105' 
+                  : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 border border-slate-100'
+              }`}
             >
-              <Plus size={28} />
+              {tag}
             </button>
-         </div>
-      </div>
-
-      <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide">
-        {allTags.map(tag => (
-          <button
-            key={tag}
-            onClick={() => setActiveFilterTag(tag)}
-            className={`px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-[0.1em] transition-all whitespace-nowrap ${
-              activeFilterTag === tag 
-                ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 scale-105' 
-                : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 border border-slate-100'
-            }`}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <AnimatePresence mode="popLayout">
-          {filteredNotes.map((note, index) => (
-            <NoteCard 
-              key={note.id} 
-              note={note} 
-              index={index} 
-              onEdit={onOpenNoteEditor} 
-              onDelete={deleteNote} 
-            />
           ))}
-        </AnimatePresence>
-        
-        {filteredNotes.length === 0 && (
-          <div className="col-span-full py-40 flex flex-col items-center justify-center text-slate-300">
-             <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6">
-                <Hash size={40} className="stroke-1 opacity-20" />
-             </div>
-             <p className="text-sm font-black uppercase tracking-[0.2em]">No notes found</p>
-          </div>
-        )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <AnimatePresence mode="popLayout">
+            {filteredNotes.map((note, index) => (
+              <NoteCard 
+                key={note.id} 
+                note={note} 
+                index={index} 
+                onEdit={onOpenNoteEditor} 
+                onDelete={deleteNote} 
+              />
+            ))}
+          </AnimatePresence>
+          
+          {filteredNotes.length === 0 && (
+            <div className="col-span-full py-40 flex flex-col items-center justify-center text-slate-300">
+               <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6">
+                  <Hash size={40} className="stroke-1 opacity-20" />
+               </div>
+               <p className="text-sm font-black uppercase tracking-[0.2em]">{t('No notes found')}</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      <AnimatePresence>
+        {showClearModal && (
+          <ClearNotesModal 
+            isOpen={showClearModal}
+            onClose={() => setShowClearModal(false)}
+            onConfirm={handleClearConfirm}
+            allTags={allTags}
+            t={t}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
