@@ -204,13 +204,13 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
          </div>
 
          <main className="flex-1 overflow-y-auto">
-            <AnimatePresence mode="sync">
+            <AnimatePresence mode="wait">
               <motion.div
                 key={activeSection}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.18, ease: "easeInOut" }}
                 className="p-4"
               >
                 {/* Clone children to pass openTaskDetail prop */}
@@ -319,13 +319,13 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
         </header>
 
         <main className="flex-1 overflow-y-auto bg-[#f8fafc]">
-          <AnimatePresence mode="sync">
+          <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
               className="p-8"
             >
               {/* Clone children to pass openTaskDetail prop */}
