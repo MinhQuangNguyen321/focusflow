@@ -8,7 +8,7 @@ FocusFlow la ung dung nang suat hien dai duoc xay dung bang React va Vite, giup 
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Cloud-ffca28?logo=firebase&logoColor=black)
 ![PWA](https://img.shields.io/badge/PWA-Enabled-0f172a)
-![License](https://img.shields.io/badge/License-Not%20Specified-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Live Demo
 
@@ -144,11 +144,28 @@ If the site appears blank after deployment:
 - Richer analytics and reporting widgets
 - Expanded test coverage
 
+## Changelog
+
+### v0.3.0 - 2026-04-05
+
+- Rebranded app identity from AI Todo to FocusFlow
+- Updated GitHub Pages base path to /focusflow/
+- Improved README with bilingual documentation and visual previews
+
+### v0.2.0 - 2026-04-05
+
+- Added Gemini-powered AI assistant integration
+- Expanded dashboard and feature-level UI updates
+
+### v0.1.0 - Initial release
+
+- Core productivity workspace with tasks, notes, calendar, and focus mode
+
 ## Author
 
 Minh Quang Nguyen
 
 ## License
 
-No license file is currently provided in this repository.
-If you plan to open-source this project, add a LICENSE file (for example MIT).
+This project is licensed under the MIT License.
+See LICENSE for full terms.
