@@ -1,19 +1,23 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const rootDir = process.cwd();
 
-const pathsToScan = [
-  path.join(rootDir, "src"),
-  path.join(rootDir, "dist")
-];
+const textExtensions = new Set([
+  ".js", ".jsx", ".ts", ".tsx", ".html", ".css", ".json", ".md", ".yml", ".yaml", ".txt", ".mjs"
+]);
 
-const fileExtensions = new Set([".js", ".jsx", ".ts", ".tsx", ".html", ".css"]);
+const allowedEnvFiles = new Set([".env.example"]);
 
 const strictPatterns = [
   {
     name: "Forbidden VITE_GEMINI_API_KEY frontend usage",
     regex: /import\.meta\.env\.VITE_GEMINI_API_KEY/g
+  },
+  {
+    name: "Forbidden hardcoded VITE_GEMINI_API_KEY assignment",
+    regex: /VITE_GEMINI_API_KEY\s*=\s*["']?AIza[0-9A-Za-z_-]{20,}/g
   },
   {
     name: "Hardcoded Gemini key assignment",
@@ -28,6 +32,31 @@ const strictPatterns = [
 const contextualKeyRegex = /AIza[0-9A-Za-z_-]{20,}/g;
 const geminiContextRegex = /(gemini|generativelanguage|aistudio|google ai)/i;
 
+function getTrackedFiles() {
+  try {
+    const output = execSync("git ls-files -z", { cwd: rootDir, stdio: ["ignore", "pipe", "ignore"] });
+    return output
+      .toString("utf8")
+      .split("\0")
+      .filter(Boolean)
+      .map((relPath) => path.join(rootDir, relPath));
+  } catch {
+    return [];
+  }
+}
+
+function isTextLikeFile(filePath) {
+  const base = path.basename(filePath);
+  const ext = path.extname(filePath).toLowerCase();
+  if (base.startsWith(".env")) return true;
+  return textExtensions.has(ext);
+}
+
+function hasDisallowedTrackedEnvFile(relPath) {
+  const base = path.basename(relPath);
+  return base.startsWith(".env") && !allowedEnvFiles.has(base);
+}
+
 function walkFiles(dir) {
   if (!fs.existsSync(dir)) return [];
 
@@ -40,9 +69,7 @@ function walkFiles(dir) {
       files.push(...walkFiles(fullPath));
       continue;
     }
-
-    const ext = path.extname(entry.name).toLowerCase();
-    if (fileExtensions.has(ext)) {
+    if (isTextLikeFile(fullPath)) {
       files.push(fullPath);
     }
   }
@@ -52,6 +79,16 @@ function walkFiles(dir) {
 
 function checkFile(filePath) {
   const relPath = path.relative(rootDir, filePath).replace(/\\/g, "/");
+  if (!fs.existsSync(filePath)) return [];
+
+  if (hasDisallowedTrackedEnvFile(relPath)) {
+    return [{
+      file: relPath,
+      pattern: "Tracked env file detected",
+      sample: "Remove from git and keep only .env.example tracked"
+    }];
+  }
+
   const content = fs.readFileSync(filePath, "utf8");
   const findings = [];
   const isSourceFile = relPath.startsWith("src/");
@@ -85,7 +122,9 @@ function checkFile(filePath) {
   return findings;
 }
 
-const allFiles = pathsToScan.flatMap((targetPath) => walkFiles(targetPath));
+const trackedFiles = getTrackedFiles().filter((filePath) => isTextLikeFile(filePath));
+const distFiles = walkFiles(path.join(rootDir, "dist"));
+const allFiles = [...new Set([...trackedFiles, ...distFiles])];
 const allFindings = allFiles.flatMap((filePath) => checkFile(filePath));
 
 if (allFindings.length > 0) {
@@ -98,4 +137,4 @@ if (allFindings.length > 0) {
   process.exit(1);
 }
 
-console.log("[SECURITY CHECK] No exposed API keys detected in src/ or dist/.");
+console.log("[SECURITY CHECK] No exposed API keys detected in tracked files.");

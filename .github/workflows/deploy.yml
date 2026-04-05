@@ -29,6 +29,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Security scan
+        run: npm run security:check-secrets
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
