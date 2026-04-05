@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="FocusFlow Dashboard Preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect x="40" y="40" width="250" height="595" rx="24" fill="#0b1220" opacity="0.75"/>
+  <rect x="320" y="40" width="840" height="120" rx="24" fill="#ffffff" opacity="0.95"/>
+  <rect x="320" y="180" width="255" height="150" rx="20" fill="#dbeafe"/>
+  <rect x="595" y="180" width="255" height="150" rx="20" fill="#dcfce7"/>
+  <rect x="870" y="180" width="290" height="150" rx="20" fill="#fef3c7"/>
+  <rect x="320" y="350" width="560" height="285" rx="20" fill="#ffffff" opacity="0.95"/>
+  <rect x="900" y="350" width="260" height="285" rx="20" fill="#e2e8f0"/>
+  <text x="340" y="112" fill="#0f172a" font-size="40" font-family="Segoe UI, Arial, sans-serif" font-weight="700">FocusFlow Dashboard</text>
+  <text x="340" y="146" fill="#334155" font-size="18" font-family="Segoe UI, Arial, sans-serif">Overview of tasks, events, and AI-powered planning.</text>
+</svg>
