@@ -1,7 +1,18 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, CheckCircle, Clock, Tag, Folder, Calendar as CalendarIcon, Flag } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
+
+const safeFormatDate = (value, pattern, fallback) => {
+  if (!value) return fallback;
+  const date = new Date(value);
+  if (!isValid(date)) return fallback;
+  try {
+    return format(date, pattern);
+  } catch {
+    return fallback;
+  }
+};
 
 const TaskDrawer = ({ isOpen, onClose, task, updateTask, deleteTask }) => {
   if (!isOpen || !task) return null;
@@ -102,7 +113,7 @@ const TaskDrawer = ({ isOpen, onClose, task, updateTask, deleteTask }) => {
                      <CalendarIcon size={10} /> Due Date
                    </p>
                    <p className="font-bold text-slate-700 text-sm">
-                     {task.dueDate ? format(new Date(task.dueDate), 'MMMM d, yyyy') : 'No Date Set'}
+                     {safeFormatDate(task.dueDate, 'MMMM d, yyyy', 'No Date Set')}
                    </p>
                 </div>
 
@@ -130,7 +141,7 @@ const TaskDrawer = ({ isOpen, onClose, task, updateTask, deleteTask }) => {
              <div className="flex items-center gap-3 text-slate-400">
                 <Clock size={14} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">
-                  Created on {task.createdAt ? format(new Date(task.createdAt), 'MMM d, h:mm a') : 'N/A'}
+                  Created on {safeFormatDate(task.createdAt, 'MMM d, h:mm a', 'N/A')}
                 </span>
              </div>
           </div>

@@ -86,6 +86,7 @@ const DEFAULT_SETTINGS = {
 const APP_ICON = `${import.meta.env.BASE_URL}favicon.svg`;
 
 function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '000000000000-placeholder.apps.googleusercontent.com';
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [guestMode, setGuestMode] = useState(false)
@@ -643,7 +644,7 @@ function App() {
   }
 
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={googleClientId}>
       <LanguageProvider language={settings.language}>
         <div className="h-screen flex flex-col bg-[#f3f4f6]">
         <Shell 

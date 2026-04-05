@@ -14,13 +14,16 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
   const [selectedTask, setSelectedTask] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const userEmail = user?.email || '';
+  const emailPrefix = userEmail.includes('@') ? userEmail.split('@')[0] : userEmail;
 
   const getInitials = () => {
     if (!user) return 'GA'; // Guest Account
     if (user.displayName) {
       return user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     }
-    return user.email.slice(0, 2).toUpperCase();
+    if (userEmail) return userEmail.slice(0, 2).toUpperCase();
+    return 'UU';
   };
 
   // Function to be called from children (Dashboard, Calendar)
@@ -140,8 +143,8 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
              >
                 <div className="text-right hidden sm:block">
-                  <p className="text-xs font-black text-slate-900 leading-none group-hover:text-blue-600 transition-colors">{user ? (user.displayName || user.email.split('@')[0]) : 'Guest Account'}</p>
-                  <p className="text-[10px] font-bold text-slate-400 mt-1">{user ? user.email : 'Local Storage Only'}</p>
+                  <p className="text-xs font-black text-slate-900 leading-none group-hover:text-blue-600 transition-colors">{user ? (user.displayName || emailPrefix || 'FocusFlow User') : 'Guest Account'}</p>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1">{user ? (userEmail || 'No email') : 'Local Storage Only'}</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-blue-100 relative">
                   {getInitials()}
@@ -214,8 +217,8 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
                         setIsDropdownOpen(false); 
                      }}
                   >
-                     <p className="text-sm font-bold text-slate-800">{user ? user.displayName || 'FocusFlow User' : 'Guest Mode'}</p>
-                     <p className="text-xs text-slate-500 truncate">{user ? user.email : 'Offline workspace'}</p>
+                     <p className="text-sm font-bold text-slate-800">{user ? user.displayName || emailPrefix || 'FocusFlow User' : 'Guest Mode'}</p>
+                     <p className="text-xs text-slate-500 truncate">{user ? (userEmail || 'No email') : 'Offline workspace'}</p>
                   </div>
                   <div className="p-2">
                      <button 
