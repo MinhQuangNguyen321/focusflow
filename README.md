@@ -87,8 +87,13 @@ Optional environment variables:
 
 ```env
 VITE_GOOGLE_CLIENT_ID=
-VITE_GEMINI_API_KEY=
 ```
+
+Gemini integration note:
+
+- Do not set `VITE_GEMINI_API_KEY` for production static deployments.
+- Enter Gemini key at runtime in Settings instead. The app stores it in `sessionStorage` only and does not sync it to Firestore.
+- For real production usage, route Gemini calls through a backend/serverless proxy.
 
 ### 4. Run in development
 
@@ -102,9 +107,12 @@ npm run dev
 npm run dev       # Run local dev server
 npm run build     # Build production bundle
 npm run preview   # Preview production build locally
+npm run security:check-secrets  # Scan src/dist for exposed API keys
 npm run deploy    # Publish dist to GitHub Pages
 npm run lint      # Run ESLint
 ```
+
+`npm run deploy` now runs an automatic secret scan after build and blocks deployment if a key-like value is found.
 
 ## Deployment (GitHub Pages)
 

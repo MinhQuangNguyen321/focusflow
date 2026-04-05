@@ -135,7 +135,7 @@ const AIAssistant = ({ isOpen, onClose, addTask, addEvent, settings }) => {
     setInput('');
     setIsTyping(true);
 
-    const apiKey = settings?.geminiKey?.trim() || import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = settings?.geminiKey?.trim();
 
     if (apiKey) {
       try {
@@ -174,9 +174,9 @@ const AIAssistant = ({ isOpen, onClose, addTask, addEvent, settings }) => {
 
         setMessages(prev => [...prev, { id: Date.now() + 1, text: parsed.responseMessage, isBot: true, success: true }]);
       } catch (err) {
-        setMessages(prev => [...prev, { id: Date.now() + 1, text: `⚠️ AI: ${err.message}. Đang dùng bộ xử lý dự phòng...`, isBot: true, success: false }]);
+        // Silently fall back to local NLP engine when Gemini is unavailable
         const result = parseAndExecute(currentInput);
-        setMessages(prev => [...prev, { id: Date.now() + 2, text: result.message, isBot: true, success: result.success }]);
+        setMessages(prev => [...prev, { id: Date.now() + 1, text: result.message, isBot: true, success: result.success }]);
       } finally {
         setIsTyping(false);
       }

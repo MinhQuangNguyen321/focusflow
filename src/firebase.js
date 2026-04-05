@@ -1,27 +1,30 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCLMBLYIrWr-eP8AQJFZLDqfjtLY8jKugs",
-  authDomain: "my-todo-app-c11be.firebaseapp.com",
-  projectId: "my-todo-app-c11be",
-  storageBucket: "my-todo-app-c11be.firebasestorage.app",
-  messagingSenderId: "911857805197",
-  appId: "1:911857805197:web:e7780519fa52a178cbbfc4",
-  measurementId: "G-FBVRMQX4G1"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let app;
+let auth;
+let db;
 
-// Initialize & Export Services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+if (firebaseConfig.apiKey) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+  }
+} else {
+  console.warn("Firebase API key is missing. Cloud sync is disabled.");
+}
+
+export { auth, db };

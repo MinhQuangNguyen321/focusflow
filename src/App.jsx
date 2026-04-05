@@ -28,6 +28,41 @@ import {
 } from 'firebase/firestore'
 
 const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Ideas'];
+const SENSITIVE_SETTINGS_KEYS = ['geminiKey', 'googleAccessToken'];
+
+const pickSensitiveSettings = (source = {}) => {
+  return SENSITIVE_SETTINGS_KEYS.reduce((acc, key) => {
+    if (source[key] !== undefined) acc[key] = source[key];
+    return acc;
+  }, {});
+};
+
+const stripSensitiveSettings = (source = {}) => {
+  const clone = { ...source };
+  SENSITIVE_SETTINGS_KEYS.forEach((key) => {
+    delete clone[key];
+  });
+  return clone;
+};
+
+const readSensitiveSettings = () => {
+  try {
+    const raw = sessionStorage.getItem('ai_todo_sensitive_settings');
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeSensitiveSettings = (source = {}) => {
+  const sensitive = pickSensitiveSettings(source);
+  if (Object.keys(sensitive).length === 0) {
+    sessionStorage.removeItem('ai_todo_sensitive_settings');
+    return;
+  }
+  sessionStorage.setItem('ai_todo_sensitive_settings', JSON.stringify(sensitive));
+};
+
 const DEFAULT_SETTINGS = { 
   darkMode: false, 
   notifications: false, 
@@ -38,6 +73,8 @@ const DEFAULT_SETTINGS = {
   bio: '',
   role: '',
   location: '',
+  geminiKey: '',
+  googleAccessToken: null,
   customQuotes: [
     "Take a deep breath and start small.",
     "A clear space is a clear mind.",
@@ -206,7 +243,11 @@ function App() {
         if (snapshot.exists()) setCategories(snapshot.data().list);
       });
       const unsubSettings = onSnapshot(doc(db, "users", user.uid, "settings", "preferences"), (snapshot) => {
-        if (snapshot.exists()) setSettings(snapshot.data());
+        if (snapshot.exists()) {
+          const publicSettings = stripSensitiveSettings(snapshot.data());
+          const sensitiveSettings = readSensitiveSettings();
+          setSettings({ ...DEFAULT_SETTINGS, ...publicSettings, ...sensitiveSettings });
+        }
       });
 
       return () => { unsubTasks(); unsubEvents(); unsubNotes(); unsubCats(); unsubSettings(); };
@@ -222,7 +263,11 @@ function App() {
       if (savedNotes) setNotes(JSON.parse(savedNotes));
       if (savedEvents) setEvents(JSON.parse(savedEvents));
       if (savedCats) setCategories(JSON.parse(savedCats));
-      if (savedSettings) setSettings(JSON.parse(savedSettings));
+      if (savedSettings) {
+        const localPublicSettings = stripSensitiveSettings(JSON.parse(savedSettings));
+        const sensitiveSettings = readSensitiveSettings();
+        setSettings({ ...DEFAULT_SETTINGS, ...localPublicSettings, ...sensitiveSettings });
+      }
     }
   }, [user, guestMode]);
 
@@ -253,9 +298,13 @@ function App() {
       localStorage.setItem('ai_todo_categories', JSON.stringify(categories));
       localStorage.setItem('ai_todo_events', JSON.stringify(events));
       localStorage.setItem('ai_todo_notes', JSON.stringify(notes));
-      localStorage.setItem('ai_todo_settings', JSON.stringify(settings));
+      localStorage.setItem('ai_todo_settings', JSON.stringify(stripSensitiveSettings(settings)));
     }
   }, [tasks, categories, events, notes, settings, user, guestMode]);
+
+  useEffect(() => {
+    writeSensitiveSettings(settings);
+  }, [settings?.geminiKey, settings?.googleAccessToken]);
 
   const addTask = async (taskData) => {
     const newTask = { ...taskData, status: 'Pending', createdAt: new Date().toISOString() };
@@ -455,8 +504,10 @@ function App() {
 
   const updateSettings = async (newSettingsObj) => {
     const updated = { ...settings, ...newSettingsObj };
+    const publicSettings = stripSensitiveSettings(updated);
     if (user) {
-      await setDoc(doc(db, "users", user.uid, "settings", "preferences"), updated);
+      await setDoc(doc(db, "users", user.uid, "settings", "preferences"), publicSettings);
+      setSettings(updated);
     } else {
       setSettings(updated);
     }
@@ -464,6 +515,7 @@ function App() {
 
   const handleLogout = async () => {
     await signOut(auth);
+    sessionStorage.removeItem('ai_todo_sensitive_settings');
     setUser(null);
     setGuestMode(false);
     // Clear data to prevent leaks between sessions

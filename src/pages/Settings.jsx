@@ -365,7 +365,7 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
          <div className="space-y-4">
             <div className="flex flex-col gap-2">
                <label className="text-sm font-bold text-slate-800">{t('Gemini API Key')}</label>
-               <p className="text-xs text-slate-500 mb-2">Enable smart AI parsing. Get your key from Google AI Studio.</p>
+               <p className="text-xs text-slate-500 mb-2">Enable smart AI parsing. Key is stored for this browser session only and is not synced to cloud.</p>
                <div className="flex gap-3">
                   <input 
                      type="password"
