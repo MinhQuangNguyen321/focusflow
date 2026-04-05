@@ -2,8 +2,6 @@
 
 FocusFlow is a modern productivity web app built with React and Vite to manage tasks, notes, events, and focus sessions in one streamlined workspace.
 
-FocusFlow la ung dung nang suat hien dai duoc xay dung bang React va Vite, giup ban quan ly cong viec, ghi chu, su kien va phien tap trung trong mot khong gian thong nhat.
-
 ![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Cloud-ffca28?logo=firebase&logoColor=black)
@@ -19,7 +17,7 @@ FocusFlow la ung dung nang suat hien dai duoc xay dung bang React va Vite, giup 
 ![FocusFlow Dashboard Guide](public/previews/dashboard-overview.png)
 ![FocusFlow Dashboard Main](public/previews/dashboard-main.png)
 
-## Key Features | Tinh nang noi bat
+## Key Features
 
 - Smart dashboard with real-time productivity overview
 - AI assistant flow for creating tasks and events from natural language
