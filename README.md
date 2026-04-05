@@ -16,9 +16,8 @@ FocusFlow la ung dung nang suat hien dai duoc xay dung bang React va Vite, giup 
 
 ## Product Preview
 
-![FocusFlow Dashboard](public/previews/dashboard.svg)
-![FocusFlow Tasks](public/previews/tasks.svg)
-![FocusFlow Focus Mode](public/previews/focus.svg)
+![FocusFlow Dashboard Guide](public/previews/dashboard-overview.png)
+![FocusFlow Dashboard Main](public/previews/dashboard-main.png)
 
 ## Key Features | Tinh nang noi bat
 
