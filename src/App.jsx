@@ -28,7 +28,7 @@ import {
 } from 'firebase/firestore'
 
 const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Ideas'];
-const SENSITIVE_SETTINGS_KEYS = ['geminiKey', 'googleAccessToken'];
+const SENSITIVE_SETTINGS_KEYS = ['geminiKey'];
 
 const pickSensitiveSettings = (source = {}) => {
   return SENSITIVE_SETTINGS_KEYS.reduce((acc, key) => {
@@ -305,7 +305,7 @@ function App() {
 
   useEffect(() => {
     writeSensitiveSettings(settings);
-  }, [settings?.geminiKey, settings?.googleAccessToken]);
+  }, [settings?.geminiKey]);
 
   const addTask = async (taskData) => {
     const newTask = { ...taskData, status: 'Pending', createdAt: new Date().toISOString() };
