@@ -192,8 +192,16 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
           const isSelected = isSameDay(day, selectedDate);
           const isCurrentMonth = isSameMonth(day, monthStart);
           
-          const dayTasks = tasks.filter(t => isSameDay(new Date(t.dueDate), day));
-          const dayEvents = events.filter(e => isSameDay(new Date(e.date), day));
+          const dayTasks = tasks.filter(t => {
+            if (!t.dueDate) return false;
+            const d = new Date(t.dueDate);
+            return !isNaN(d.getTime()) && isSameDay(d, day);
+          });
+          const dayEvents = events.filter(e => {
+            if (!e.date) return false;
+            const d = new Date(e.date);
+            return !isNaN(d.getTime()) && isSameDay(d, day);
+          });
 
           return (
             <div
@@ -247,7 +255,11 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
 
   const renderDayTimeline = () => {
      const hours = Array.from({ length: 24 }, (_, i) => i);
-     const dayEvents = events.filter(e => isSameDay(new Date(e.date), selectedDate));
+     const dayEvents = events.filter(e => {
+       if (!e.date) return false;
+       const d = new Date(e.date);
+       return !isNaN(d.getTime()) && isSameDay(d, selectedDate);
+     });
      const isToday = isSameDay(selectedDate, new Date());
 
      return (
@@ -384,8 +396,16 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
   };
 
   const selectedDayItems = [
-    ...events.filter(e => e.date && isSameDay(new Date(e.date), selectedDate)).map(e => ({ ...e, type: 'event' })),
-    ...tasks.filter(t => t.dueDate && isSameDay(new Date(t.dueDate), selectedDate)).map(t => ({ ...t, type: 'task' }))
+    ...events.filter(e => {
+      if (!e.date) return false;
+      const d = new Date(e.date);
+      return !isNaN(d.getTime()) && isSameDay(d, selectedDate);
+    }).map(e => ({ ...e, type: 'event' })),
+    ...tasks.filter(t => {
+      if (!t.dueDate) return false;
+      const d = new Date(t.dueDate);
+      return !isNaN(d.getTime()) && isSameDay(d, selectedDate);
+    }).map(t => ({ ...t, type: 'task' }))
   ].sort((a, b) => {
     if (a.type === 'event' && b.type === 'event') return (a.startTime || '').localeCompare(b.startTime || '');
     if (a.type === 'event') return -1;

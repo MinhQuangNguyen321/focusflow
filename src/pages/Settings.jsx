@@ -423,9 +423,15 @@ const Settings = ({ user, settings, updateSettings, onLogout }) => {
                   </div>
                   
                   <div className="flex items-center gap-4 px-2">
-                     <Calendar size={18} className="text-slate-400" />
-                     <p className="text-sm font-semibold text-slate-500">Member Since: <span className="font-bold text-slate-700">{user.metadata.creationTime ? format(new Date(user.metadata.creationTime), 'MMM dd, yyyy') : 'Unknown'}</span></p>
-                  </div>
+                      <Calendar size={18} className="text-slate-400" />
+                      <p className="text-sm font-semibold text-slate-500">Member Since: <span className="font-bold text-slate-700">
+                        {(() => {
+                          try {
+                            return user?.metadata?.creationTime ? format(new Date(user.metadata.creationTime), 'MMM dd, yyyy') : 'Unknown';
+                          } catch { return 'Unknown'; }
+                        })()}
+                      </span></p>
+                   </div>
                </>
             )}
 

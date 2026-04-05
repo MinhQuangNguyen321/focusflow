@@ -16,7 +16,7 @@ const StatCard = ({ label, value, icon: Icon, color }) => (
   </div>
 );
 
-const Dashboard = ({ tasks, events, onOpenTask, categories = [], setActiveSection, openAIAssistant, clearTasks, user, settings }) => {
+const Dashboard = ({ tasks, events, onOpenTask, categories = [], setActiveSection, onSelectFolder, openAIAssistant, clearTasks, user, settings }) => {
   const { t } = useTranslation();
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearType, setClearType] = useState('all');
@@ -29,8 +29,17 @@ const Dashboard = ({ tasks, events, onOpenTask, categories = [], setActiveSectio
 
   // Filter for upcoming events
   const upcomingEvents = events
-    .filter(e => new Date(e.date) >= new Date().setHours(0,0,0,0))
-    .sort((a, b) => new Date(a.date + ' ' + a.startTime) - new Date(b.date + ' ' + b.startTime))
+    .filter(e => {
+      if (!e.date) return false;
+      const d = new Date(e.date);
+      return !isNaN(d.getTime()) && d >= new Date().setHours(0,0,0,0);
+    })
+    .sort((a, b) => {
+      const da = new Date(a.date + ' ' + (a.startTime || '00:00'));
+      const db = new Date(b.date + ' ' + (b.startTime || '00:00'));
+      if (isNaN(da.getTime()) || isNaN(db.getTime())) return 0;
+      return da - db;
+    })
     .slice(0, 3);
 
   return (
@@ -86,7 +95,7 @@ const Dashboard = ({ tasks, events, onOpenTask, categories = [], setActiveSectio
                    <Trash2 size={15} />
                  </button>
                  <button
-                   onClick={() => setActiveSection('tasks')}
+                   onClick={() => { setActiveSection('tasks'); if (onSelectFolder) onSelectFolder(null); }}
                    className="text-sm font-bold text-blue-600 hover:text-blue-700"
                  >
                    {t('View All')}

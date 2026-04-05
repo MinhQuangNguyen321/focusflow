@@ -170,7 +170,11 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
                      >
                         <div 
                            className="p-4 border-b border-slate-50 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors"
-                           onClick={() => { setActiveSection('dashboard'); setIsDropdownOpen(false); }}
+                           onClick={() => { 
+                              setActiveSection('dashboard'); 
+                              onSelectFolder(null);
+                              setIsDropdownOpen(false); 
+                           }}
                         >
                            <p className="text-sm font-bold text-slate-800">{user ? user.displayName || 'FocusFlow User' : 'Guest Mode'}</p>
                            <p className="text-xs text-slate-500 truncate">{user ? user.email : 'Offline workspace'}</p>
@@ -200,13 +204,13 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
          </div>
 
          <main className="flex-1 overflow-y-auto">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
               <motion.div
                 key={activeSection}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 className="p-4"
               >
                 {/* Clone children to pass openTaskDetail prop */}
@@ -220,7 +224,11 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
             </AnimatePresence>
          </main>
 
-         <MobileNav activeSection={activeSection} setActiveSection={setActiveSection} />
+          <MobileNav 
+            activeSection={activeSection} 
+            setActiveSection={setActiveSection} 
+            onSelectFolder={onSelectFolder}
+          />
       </div>
 
       {/* Desktop Main Content */}
@@ -269,20 +277,24 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
                        className="fixed inset-0 z-40" 
                        onClick={() => setIsDropdownOpen(false)}
                      />
-                     <motion.div 
-                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                       transition={{ duration: 0.15 }}
-                       className="absolute right-0 top-full mt-4 w-64 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden z-50 origin-top-right"
-                     >
-                        <div 
-                           className="p-4 border-b border-slate-50 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors"
-                           onClick={() => { setActiveSection('dashboard'); setIsDropdownOpen(false); }}
-                        >
-                           <p className="text-sm font-bold text-slate-800">{user ? user.displayName : 'Guest Mode'}</p>
-                           <p className="text-xs text-slate-500">{user ? user.email : 'Offline workspace'}</p>
-                        </div>
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-4 w-64 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden z-50 origin-top-right"
+                      >
+                         <div 
+                            className="p-4 border-b border-slate-50 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors"
+                            onClick={() => { 
+                               setActiveSection('dashboard'); 
+                               onSelectFolder(null);
+                               setIsDropdownOpen(false); 
+                            }}
+                         >
+                            <p className="text-sm font-bold text-slate-800">{user ? user.displayName : 'Guest Mode'}</p>
+                            <p className="text-xs text-slate-500">{user ? user.email : 'Offline workspace'}</p>
+                         </div>
                         <div className="p-2">
                            <button 
                              onClick={() => { setActiveSection('settings'); setIsDropdownOpen(false); }}
@@ -307,13 +319,13 @@ const Shell = ({ children, activeSection, setActiveSection, tasks, events, categ
         </header>
 
         <main className="flex-1 overflow-y-auto bg-[#f8fafc]">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             <motion.div
               key={activeSection}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
               className="p-8"
             >
               {/* Clone children to pass openTaskDetail prop */}

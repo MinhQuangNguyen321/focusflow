@@ -151,8 +151,6 @@ const translations = {
     'Activity Added': 'Đã Thêm Hoạt Động',
 
     // AI Assistant
-    "Type what you need, and I'll create the tasks and events automatically.": 'Gõ thứ bạn cần, AI sẽ tạo công việc/sự kiện tự động.',
-    'Nexus AI Assistant': 'Trợ Lý AI FocusFlow',
     'Active & Listening': 'Đang Lắng Nghe',
     'Ask AI to create a task...': 'Yêu cầu AI tạo tác vụ...',
 

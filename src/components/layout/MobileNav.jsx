@@ -3,7 +3,7 @@ import { LayoutDashboard, StickyNote, Calendar, Settings, Timer } from 'lucide-r
 
 import { useTranslation } from '../../lib/i18n.jsx';
 
-const MobileNav = ({ activeSection, setActiveSection }) => {
+const MobileNav = ({ activeSection, setActiveSection, onSelectFolder }) => {
   const { t } = useTranslation();
   
   const navItems = [
@@ -22,7 +22,10 @@ const MobileNav = ({ activeSection, setActiveSection }) => {
         return (
           <button
             key={item.id}
-            onClick={() => setActiveSection(item.id)}
+            onClick={() => { 
+              setActiveSection(item.id);
+              if (onSelectFolder) onSelectFolder(null);
+            }}
             className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 ${
               isActive ? 'text-blue-600' : 'text-slate-400'
             }`}

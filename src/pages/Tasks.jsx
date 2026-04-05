@@ -204,7 +204,7 @@ const Tasks = ({ tasks, selectedFolder, updateTask, deleteTask, clearTasks, cate
             >
               {t(tab)}
               {activeTab === tab && (
-                <motion.div layoutId="activeTab" className="absolute -bottom-2.5 left-0 right-0 h-1 bg-blue-600 rounded-full" />
+                <div className="absolute -bottom-2.5 left-0 right-0 h-1 bg-blue-600 rounded-full" />
               )}
             </button>
           ))}
@@ -257,7 +257,11 @@ const Tasks = ({ tasks, selectedFolder, updateTask, deleteTask, clearTasks, cate
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <Calendar size={12} />
                       <span className="text-[10px] font-black uppercase tracking-widest">
-                        {task.dueDate ? format(new Date(task.dueDate), 'MMM d, yyyy') : t('No Date')}
+                        {(() => {
+                          if (!task.dueDate) return t('No Date');
+                          const d = new Date(task.dueDate);
+                          return isNaN(d.getTime()) ? t('No Date') : format(d, 'MMM d, yyyy');
+                        })()}
                       </span>
                     </div>
                     {task.category && (

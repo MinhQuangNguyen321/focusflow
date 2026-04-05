@@ -505,8 +505,10 @@ function App() {
             categories={categories}
             clearTasks={clearTasks} 
             setActiveSection={setActiveSection}
+            onSelectFolder={handleSelectFolder}
             openAIAssistant={() => setShowAIAssistant(true)}
             user={user}
+            settings={settings}
           />
         )
       case 'tasks':
@@ -562,7 +564,9 @@ function App() {
             events={[...events, ...googleEvents]} 
             updateTask={updateTask} 
             categories={categories} 
+            clearTasks={clearTasks}
             setActiveSection={setActiveSection}
+            onSelectFolder={handleSelectFolder}
             openAIAssistant={() => setShowAIAssistant(true)}
             user={user}
             settings={settings}
