@@ -110,7 +110,15 @@ npm run lint      # Run ESLint
 
 - Deploy target branch: gh-pages
 - Base path: /focusflow/
-- Deploy command:
+- Auto deploy on push to main via GitHub Actions
+
+Workflow:
+
+- Push code to `main`
+- GitHub Actions builds the app
+- The generated `dist` folder is published to `gh-pages`
+
+Manual deploy command:
 
 ```bash
 npm run deploy
