@@ -515,15 +515,26 @@ function App() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
-    sessionStorage.removeItem('ai_todo_sensitive_settings');
-    setUser(null);
-    setGuestMode(false);
-    // Clear data to prevent leaks between sessions
-    setTasks([]);
-    setEvents([]);
-    setNotes([]);
-    setCategories(DEFAULT_CATEGORIES);
+    try {
+      if (user && auth) {
+        await signOut(auth);
+      }
+    } catch (error) {
+      console.error('Sign out failed, falling back to local logout:', error);
+    } finally {
+      sessionStorage.removeItem('ai_todo_sensitive_settings');
+      setUser(null);
+      setGuestMode(false);
+      setActiveSection('dashboard');
+      setSelectedFolder(null);
+      // Clear data to prevent leaks between sessions
+      setTasks([]);
+      setEvents([]);
+      setGoogleEvents([]);
+      setNotes([]);
+      setCategories(DEFAULT_CATEGORIES);
+      setSettings(DEFAULT_SETTINGS);
+    }
   };
 
   const handleOpenNoteEditor = (note = null) => {
