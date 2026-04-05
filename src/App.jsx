@@ -86,7 +86,7 @@ const DEFAULT_SETTINGS = {
 const APP_ICON = `${import.meta.env.BASE_URL}favicon.svg`;
 
 function App() {
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '000000000000-placeholder.apps.googleusercontent.com';
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '911857805197-kgt11i2sibhiekhafqh1sc5bqrocum7j.apps.googleusercontent.com';
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [guestMode, setGuestMode] = useState(false)
