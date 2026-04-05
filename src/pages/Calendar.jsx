@@ -20,17 +20,24 @@ import EventCreator from '../components/features/EventCreator';
 
 const parseTimeToMinutes = (timeStr) => {
   if (!timeStr) return 0;
-  const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)?/i);
-  if (!match) return 0;
-  let [_, hours, minutes, modifier] = match;
-  hours = parseInt(hours, 10);
-  minutes = parseInt(minutes, 10);
-  
-  if (modifier) {
-      if (modifier.toUpperCase() === 'PM' && hours < 12) hours += 12;
-      if (modifier.toUpperCase() === 'AM' && hours === 12) hours = 0;
+  try {
+    const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)?/i);
+    if (!match) return 0;
+    
+    let [_, hours, minutes, modifier] = match;
+    let h = parseInt(hours, 10);
+    const m = parseInt(minutes, 10);
+    
+    if (modifier) {
+      if (modifier.toUpperCase() === 'PM' && h < 12) h += 12;
+      if (modifier.toUpperCase() === 'AM' && h === 12) h = 0;
+    }
+    
+    return h * 60 + m;
+  } catch (err) {
+    console.error("Error parsing time:", timeStr, err);
+    return 0;
   }
-  return hours * 60 + minutes;
 };
 
 const CurrentTimeTracker = () => {
@@ -279,7 +286,11 @@ const Calendar = ({ tasks, events, addTask, addEvent, updateEvent, deleteEvent, 
              </div>
               <div className="w-full sm:w-auto text-center">
                 <button 
-                   onClick={() => setSelectedDate(new Date())}
+                   onClick={() => {
+                      const today = new Date();
+                      setSelectedDate(today);
+                      setCurrentMonth(today);
+                   }}
                    className="w-full sm:w-auto px-4 py-2 font-bold text-sm text-slate-600 hover:bg-slate-100 rounded-xl"
                 >
                    {t('Jump to Today')}

@@ -645,7 +645,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <LanguageProvider language={settings.language}>
-        <div className="h-screen flex flex-col overflow-hidden bg-[#f3f4f6]">
+        <div className="h-screen flex flex-col bg-[#f3f4f6]">
         <Shell 
           activeSection={activeSection} 
           setActiveSection={setActiveSection}
@@ -661,7 +661,7 @@ function App() {
           updateTask={updateTask}
           deleteTask={deleteTask}
           onLogout={handleLogout}
-          openTaskDetail={handleOpenNoteEditor}
+          onOpenNoteEditor={handleOpenNoteEditor}
           tasks={tasks}
           events={[...events, ...googleEvents]}
         >
